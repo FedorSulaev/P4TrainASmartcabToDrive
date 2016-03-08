@@ -3,6 +3,7 @@ from environment import Agent, Environment
 from planner import RoutePlanner
 from simulator import Simulator
 from collections import namedtuple
+import matplotlib.pyplot as plt
 
 State = namedtuple("State", 
         ["light",
@@ -22,7 +23,9 @@ class LearningAgent(Agent):
         # TODO: Initialize any additional variables here
         self.encountered_states = {}
         self.epsilon = 0.1
-        self.alpha = 0.1
+        self.alpha = 0.5
+        self.rewards = []
+        self.average_rewards = []
 
     def reset(self, destination=None):
         self.planner.route_to(destination)
@@ -41,7 +44,6 @@ class LearningAgent(Agent):
             left=inputs["left"], 
             right=inputs["right"],
             next_waypoint=self.next_waypoint)
-        print self.state
         
         # TODO: Select action according to your policy
         first_time = not self.encountered_states.has_key(self.state)
@@ -53,6 +55,8 @@ class LearningAgent(Agent):
 
         # Execute action and get reward
         reward = self.env.act(self, action)
+        self.rewards.append(reward)
+        self.average_rewards.append(sum(self.rewards) / float(len(self.rewards)))
 
         # TODO: Learn policy based on state, action, reward
         if first_time:
@@ -75,8 +79,13 @@ def run():
     e.set_primary_agent(a, enforce_deadline=False)  # set agent to track
 
     # Now simulate it
-    sim = Simulator(e, update_delay=1.0)  # reduce update_delay to speed up simulation
+    sim = Simulator(e, update_delay=0)  # reduce update_delay to speed up simulation
     sim.run(n_trials=10)  # press Esc or close pygame window to quit
+    
+    plt.plot(a.average_rewards)
+    plt.xlabel("Turn")
+    plt.ylabel("Average reward")
+    plt.show()
 
 
 if __name__ == '__main__':
