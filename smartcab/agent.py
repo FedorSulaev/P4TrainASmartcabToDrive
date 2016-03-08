@@ -4,12 +4,13 @@ from planner import RoutePlanner
 from simulator import Simulator
 from collections import namedtuple
 
-LearningAgentState = namedtuple("LearningAgentState", 
+State = namedtuple("State", 
         ["light",
         "oncoming",
         "right",
         "left",
         "next_waypoint"])
+possible_actions = (None, "forward", "left", "right")
 
 class LearningAgent(Agent):
     """An agent that learns to drive in the smartcab world."""
@@ -19,6 +20,9 @@ class LearningAgent(Agent):
         self.color = 'red'  # override color
         self.planner = RoutePlanner(self.env, self)  # simple route planner to get next_waypoint
         # TODO: Initialize any additional variables here
+        self.encountered_states = {}
+        self.epsilon = 0.1
+        self.alpha = 0.1
 
     def reset(self, destination=None):
         self.planner.route_to(destination)
@@ -31,7 +35,7 @@ class LearningAgent(Agent):
         deadline = self.env.get_deadline(self)
 
         # TODO: Update state
-        self.state = LearningAgentState(
+        self.state = State(
             light=inputs["light"], 
             oncoming=inputs["oncoming"],
             left=inputs["left"], 
@@ -40,13 +44,24 @@ class LearningAgent(Agent):
         print self.state
         
         # TODO: Select action according to your policy
-        possible_actions = (None, "forward", "left", "right")
-        action = random.choice(possible_actions)
+        first_time = not self.encountered_states.has_key(self.state)
+        if first_time or random.random() < self.epsilon:
+            action = random.choice(possible_actions)
+        else:
+            action_estimates = self.encountered_states[self.state]
+            action = max(action_estimates, key=lambda x: action_estimates[x])
 
         # Execute action and get reward
         reward = self.env.act(self, action)
 
         # TODO: Learn policy based on state, action, reward
+        if first_time:
+            self.encountered_states[self.state] = {}
+            for a in possible_actions:
+                self.encountered_states[self.state][a] = 0.0
+        current_estimate = self.encountered_states[self.state][action]
+        new_estimate = current_estimate + self.alpha * (reward - current_estimate)
+        self.encountered_states[self.state][action] = new_estimate
 
         print "LearningAgent.update(): deadline = {}, inputs = {}, action = {}, reward = {}".format(deadline, inputs, action, reward)  # [debug]
 
