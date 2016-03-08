@@ -23,7 +23,7 @@ class LearningAgent(Agent):
         # TODO: Initialize any additional variables here
         self.encountered_states = {}
         self.epsilon = 0.1
-        self.alpha = 0.5
+        self.alpha = 1.0
         self.rewards = []
         self.average_rewards = []
 
@@ -67,7 +67,7 @@ class LearningAgent(Agent):
         new_estimate = current_estimate + self.alpha * (reward - current_estimate)
         self.encountered_states[self.state][action] = new_estimate
 
-        print "LearningAgent.update(): deadline = {}, inputs = {}, action = {}, reward = {}".format(deadline, inputs, action, reward)  # [debug]
+        #print "LearningAgent.update(): deadline = {}, inputs = {}, action = {}, reward = {}".format(deadline, inputs, action, reward)  # [debug]
 
 
 def run():
@@ -80,9 +80,10 @@ def run():
 
     # Now simulate it
     sim = Simulator(e, update_delay=0)  # reduce update_delay to speed up simulation
-    sim.run(n_trials=10)  # press Esc or close pygame window to quit
-    
+    sim.run(n_trials=100)  # press Esc or close pygame window to quit
+ 
     plt.plot(a.average_rewards)
+    plt.title("alpha = {}, epsilon = {}".format(a.alpha, a.epsilon))
     plt.xlabel("Turn")
     plt.ylabel("Average reward")
     plt.show()
