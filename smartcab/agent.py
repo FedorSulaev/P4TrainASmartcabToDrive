@@ -20,7 +20,7 @@ class LearningAgent(Agent):
         super(LearningAgent, self).__init__(env)  # sets self.env = env, state = None, next_waypoint = None, and a default color
         self.color = 'red'  # override color
         self.planner = RoutePlanner(self.env, self)  # simple route planner to get next_waypoint
-        # TODO: Initialize any additional variables here
+        # additional variables
         self.encountered_states = {}
         self.epsilon = 0.1
         self.alpha = 1.0
@@ -29,7 +29,6 @@ class LearningAgent(Agent):
 
     def reset(self, destination=None):
         self.planner.route_to(destination)
-        # TODO: Prepare for a new trip; reset any variables here, if required
 
     def update(self, t):
         # Gather inputs
@@ -37,7 +36,7 @@ class LearningAgent(Agent):
         inputs = self.env.sense(self)
         deadline = self.env.get_deadline(self)
 
-        # TODO: Update state
+        # Update state
         self.state = State(
             light=inputs["light"], 
             oncoming=inputs["oncoming"],
@@ -45,7 +44,7 @@ class LearningAgent(Agent):
             right=inputs["right"],
             next_waypoint=self.next_waypoint)
         
-        # TODO: Select action according to your policy
+        # Select action according to your policy
         first_time = not self.encountered_states.has_key(self.state)
         if first_time or random.random() < self.epsilon:
             action = random.choice(possible_actions)
@@ -58,7 +57,7 @@ class LearningAgent(Agent):
         self.rewards.append(reward)
         self.average_rewards.append(sum(self.rewards) / float(len(self.rewards)))
 
-        # TODO: Learn policy based on state, action, reward
+        # Learn policy based on state, action, reward
         if first_time:
             self.encountered_states[self.state] = {}
             for a in possible_actions:
